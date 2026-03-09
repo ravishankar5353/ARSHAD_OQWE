@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="landing-page">
+    <!-- Navbar -->
+    <nav class="landing-nav glass-card">
+        <div class="logo"><i class="fa-solid fa-bolt"></i> Knowledge Nexus</div>
+        <div class="nav-actions">
+            <a href="/login" class="btn btn-outline">Sign In</a>
+            <a href="/login" class="btn btn-primary glow">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero text-center">
+        <h1 class="gradient-text fade-in-up">Master Your Knowledge<br>In Real-Time.</h1>
+        <p class="subtext fade-in-up delay-1">The ultimate interactive quiz platform featuring instant analytics, stunning visuals, and competitive performance tracking.</p>
+        <a href="/login" class="btn btn-primary btn-large glow pulse-animation fade-in-up delay-2">Enter The Nexus</a>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features">
+        <div class="grid">
+            <div class="feature-card glass-card hover-lift">
+                <div class="icon gradient-teal"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Admin Analytics</h3>
+                <p>Comprehensive dashboard managing question banks and visual student metric tracking.</p>
+            </div>
+            <div class="feature-card glass-card hover-lift">
+                <div class="icon gradient-purple"><i class="fa-solid fa-stopwatch"></i></div>
+                <h3>Live Timer</h3>
+                <p>Feel the pressure with precision interactive circular countdowns and dynamic progression.</p>
+            </div>
+            <div class="feature-card glass-card hover-lift">
+                <div class="icon gradient-blue"><i class="fa-solid fa-chart-pie"></i></div>
+                <h3>Detailed Reports</h3>
+                <p>Review comprehensive visual feedback charts calculating time spent and category strengths.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <h2 class="text-center">What Scholars Say</h2>
+        <div class="grid">
+            <div class="testimonial-card glass-card">
+                <p>"The glassmorphism UI makes studying feel like living in the future."</p>
+                <h4>- Alex Chen</h4>
+            </div>
+            <div class="testimonial-card glass-card">
+                <p>"Instant pie-chart breakdowns help me focus exactly on my weak points."</p>
+                <h4>- Sarah M.</h4>
+            </div>
+        </div>
+    </section>
+
+    <footer class="glass-card footer">
+        <div class="footer-content">
+            <div class="brand"><i class="fa-solid fa-bolt"></i> Knowledge Nexus</div>
+            <div class="socials">
+                <i class="fa-brands fa-twitter"></i>
+                <i class="fa-brands fa-github"></i>
+                <i class="fa-brands fa-discord"></i>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2026 Nexus Devs. All Rights Reserved.</p>
+    </footer>
+</div>
+{% endblock %}

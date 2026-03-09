@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="settings-page">
+    <div class="glass-card mb-3">
+        <h2><i class="fa-solid fa-sliders"></i> User Preferences</h2>
+        <p>Configure your application experience.</p>
+    </div>
+
+    <div class="grid settings-grid">
+        <!-- Theme Toggle -->
+        <div class="glass-card-solid">
+            <h3>Visual Interface</h3>
+            <form action="/settings" method="POST" class="mt-2">
+                <input type="hidden" name="action" value="theme">
+                <div class="form-group">
+                    <label>Application Theme</label>
+                    <select name="theme" class="custom-select" onchange="this.form.submit()">
+                        <option value="dark" {{ 'selected' if session.theme == 'dark' else '' }}>Neon Dark Mode</option>
+                        <option value="light" {{ 'selected' if session.theme == 'light' else '' }}>Holo Light Mode</option>
+                    </select>
+                </div>
+            </form>
+            <p class="text-muted text-sm mt-1">Changes are applied immediately.</p>
+        </div>
+
+        <!-- Security -->
+        <div class="glass-card-solid">
+            <h3>Security Clearance</h3>
+            <form action="/settings" method="POST" class="mt-2">
+                <input type="hidden" name="action" value="password">
+                <div class="form-group">
+                    <label>New Passcode</label>
+                    <input type="password" name="password" placeholder="Enter new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm glow">Update Security <i class="fa-solid fa-shield"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

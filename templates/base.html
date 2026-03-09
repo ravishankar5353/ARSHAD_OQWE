@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ session.get('theme', 'dark') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Nexus | Online Quiz</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="app-layout">
+        {% if session.get('user_id') %}
+            <!-- Collapsible Sidebar -->
+            <nav class="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fa-solid fa-bolt"></i> Nexus</h2>
+                </div>
+                <ul class="nav-links">
+                    {% if session.get('role') == 'admin' %}
+                    <li><a href="/admin" class="{{ 'active' if request.path == '/admin' }}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                    {% else %}
+                    <li><a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' }}"><i class="fa-solid fa-house"></i> Home</a></li>
+                    <li><a href="/quiz" class="{{ 'active' if request.path == '/quiz' }}"><i class="fa-solid fa-gamepad"></i> Play</a></li>
+                    <li><a href="/reports" class="{{ 'active' if request.path == '/reports' }}"><i class="fa-solid fa-file-invoice"></i> Reports</a></li>
+                    {% endif %}
+                    <li><a href="/settings" class="{{ 'active' if request.path == '/settings' }}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                </div>
+            </nav>
+            
+            <main class="main-content">
+                <!-- Topbar -->
+                <header class="topbar glass-card">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search resources...">
+                    </div>
+                    <div class="user-profile">
+                        <i class="fa-regular fa-bell"></i>
+                        <div class="avatar">
+                            <i class="fa-solid fa-user-astronaut"></i>
+                        </div>
+                        <span>{{ session.get('username') }}</span>
+                    </div>
+                </header>
+                
+                <div class="content-wrapper">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        {% else %}
+            <!-- Unauthenticated Layout -->
+            {% block auth_content %}{% endblock %}
+        {% endif %}
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

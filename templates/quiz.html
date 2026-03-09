@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-header glass-card">
+        <div class="quiz-progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="flex-between mt-2">
+            <span>Question <span id="currentQNum">1</span> of {{ questions|length }}</span>
+            <div class="timer-widget">
+                <svg class="circular-timer">
+                    <circle class="bg" cx="30" cy="30" r="25"></circle>
+                    <circle class="fg" id="timerCircle" cx="30" cy="30" r="25"></circle>
+                </svg>
+                <div class="time-text" id="timeText">60</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-body glass-card mt-3">
+        <h2 id="questionText">Loading Content...</h2>
+        <div class="options-grid" id="optionsGrid">
+            <!-- options injected via JS -->
+        </div>
+    </div>
+
+    <div class="quiz-footer flex-between mt-3">
+        <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" disabled>Previous</button>
+        <button class="btn btn-primary glow" id="nextBtn" onclick="nextQuestion()">Next Question <i class="fa-solid fa-arrow-right"></i></button>
+        <button class="btn btn-success glow hidden" id="submitBtn" onclick="submitQuiz()">Submit Assessment <i class="fa-solid fa-check"></i></button>
+    </div>
+</div>
+
+<script>
+    // Make payload available to JS logic
+    window.quizData = {{ questions|tojson|safe }};
+</script>
+{% endblock %}
