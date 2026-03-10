@@ -1,4 +1,4 @@
-# Knowledge Nexus - Online Quiz Platform
+# ARSHAD -Online Quiz platform with result evaluation 
 
 A premium Flask Web Application built with Python, HTML, CSS, and JS, featuring a sophisticated Glassmorphism UI, interactive Chart.js analytics, and circular timers.
 
