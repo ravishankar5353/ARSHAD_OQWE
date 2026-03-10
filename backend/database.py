@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import json
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DB_NAME = "quiz_web.db"
@@ -53,6 +54,16 @@ def initialize_db():
         )
     ''')
     
+    # Migrate: add answers and category columns if missing
+    try:
+        cursor.execute('ALTER TABLE results ADD COLUMN answers TEXT DEFAULT NULL')
+    except Exception:
+        pass
+    try:
+        cursor.execute('ALTER TABLE results ADD COLUMN category TEXT DEFAULT "General"')
+    except Exception:
+        pass
+
     # Try creating a default admin if none exists
     cursor.execute('SELECT id FROM users WHERE username = ?', ("admin",))
     if not cursor.fetchone():
@@ -94,6 +105,19 @@ def update_user_theme(user_id, theme):
     conn.commit()
     conn.close()
 
+def register_user(username, password, role='user'):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        hashed = generate_password_hash(password)
+        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, hashed, role))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
 # Question Operations
 def add_question(category, text, a, b, c, d, correct):
     conn = get_connection()
@@ -105,11 +129,14 @@ def add_question(category, text, a, b, c, d, correct):
     conn.commit()
     conn.close()
 
-def get_all_questions():
+def get_all_questions(category=None):
     conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM questions')
+    if category:
+        cursor.execute('SELECT * FROM questions WHERE category = ?', (category,))
+    else:
+        cursor.execute('SELECT * FROM questions')
     questions = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return questions
@@ -130,13 +157,14 @@ def get_questions_category_distribution():
     return data
 
 # Results Operations
-def save_result(user_id, score, total, correct, incorrect, time_spent):
+def save_result(user_id, score, total, correct, incorrect, time_spent, category='General', answers=None):
     conn = get_connection()
     cursor = conn.cursor()
+    answers_json = json.dumps(answers) if answers else None
     cursor.execute('''
-        INSERT INTO results (user_id, score, total_questions, correct_answers, incorrect_answers, time_spent)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (user_id, score, total, correct, incorrect, time_spent))
+        INSERT INTO results (user_id, score, total_questions, correct_answers, incorrect_answers, time_spent, category, answers)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (user_id, score, total, correct, incorrect, time_spent, category, answers_json))
     conn.commit()
     conn.close()
 
@@ -147,6 +175,13 @@ def get_user_results(user_id):
     cursor.execute('SELECT * FROM results WHERE user_id = ? ORDER BY date_taken DESC', (user_id,))
     results = [dict(row) for row in cursor.fetchall()]
     conn.close()
+    # Parse answers JSON if present
+    for r in results:
+        if r.get('answers'):
+            try:
+                r['answers'] = json.loads(r['answers'])
+            except Exception:
+                r['answers'] = None
     return results
 
 def get_all_results_with_users():
@@ -165,4 +200,4 @@ def get_all_results_with_users():
 
 if __name__ == "__main__":
     initialize_db()
-    print("Web DB Initialized")
+    print("AOQRWE DB Initialized")

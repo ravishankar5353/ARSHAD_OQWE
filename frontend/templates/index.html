@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="landing-page">
+    <!-- Navbar -->
+    <nav class="landing-nav glass-card fade-in-up">
+        <div class="logo"><i class="fa-solid fa-bolt"></i> AOQRWE</div>
+        <div class="nav-actions">
+            <button onclick="openAuthModal()" class="btn btn-primary glow">Login / Register</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero text-center">
+        <h1 class="gradient-text fade-in-up">Advanced Online Quiz System<br>Elevate Your Potential.</h1>
+        <p class="subtext fade-in-up delay-1">AOQRWE: The next generation of performance assessment and cognitive tracking. Precision analytics meets aesthetic excellence.</p>
+        <button onclick="openAuthModal()" class="btn btn-primary btn-large glow pulse-animation fade-in-up delay-2">Get Started Now</button>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features">
+        <div class="grid">
+            <div class="feature-card glass-card hover-lift">
+                <div class="icon gradient-teal"><i class="fa-solid fa-brain"></i></div>
+                <h3>Question Banks</h3>
+                <p>Multiple subjects and categorized banks for structured learning and assessment.</p>
+            </div>
+            <div class="feature-card glass-card hover-lift">
+                <div class="icon gradient-purple"><i class="fa-solid fa-bolt"></i></div>
+                <h3>30s Challenge</h3>
+                <p>Rapid-fire assessment with a 30-second limit per question to sharpen quick thinking.</p>
+            </div>
+            <div class="feature-card glass-card hover-lift">
+                <div class="icon gradient-blue"><i class="fa-solid fa-user-graduate"></i></div>
+                <h3>Student Centric</h3>
+                <p>Customized registration and profile tracking tailored for academic excellence.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal-backdrop hidden">
+        <div class="glass-card modal auth-modal-content fade-in-up">
+            <div class="modal-header">
+                <h2 id="modalTitle">Welcome to AOQRWE</h2>
+                <button onclick="closeAuthModal()" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button onclick="switchAuthTab('student')" id="tab-student" class="auth-tab active">Student</button>
+                <button onclick="switchAuthTab('admin')" id="tab-admin" class="auth-tab">Admin</button>
+            </div>
+
+            <div id="student-content" class="auth-slide">
+                <div class="auth-toggle-sub">
+                    <button onclick="toggleAction('login')" id="btn-login-toggle" class="btn btn-sm btn-outline active">Login</button>
+                    <button onclick="toggleAction('register')" id="btn-register-toggle" class="btn btn-sm btn-outline">Register</button>
+                </div>
+
+                <!-- Student Login -->
+                <form id="student-login-form" method="POST" action="/login" class="auth-form mt-2">
+                    <div class="form-group">
+                        <label>Student Username</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" name="username" id="student_username" placeholder="Username" required autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" name="password" id="student_password" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block glow">Login as Student</button>
+                </form>
+
+                <!-- Student Register (Hidden initially) -->
+                <form id="student-register-form" method="POST" action="/register" class="auth-form mt-2 hidden">
+                    <div class="form-group">
+                        <label>Choose Username</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <input type="text" name="username" id="reg_username" placeholder="Pick a unique name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" name="password" id="reg_password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <input type="hidden" name="role" value="user">
+                    <button type="submit" class="btn btn-success btn-block glow">Create Student Account</button>
+                </form>
+            </div>
+
+            <div id="admin-content" class="auth-slide hidden">
+                <form id="admin-login-form" method="POST" action="/login" class="auth-form mt-2">
+                    <div class="form-group">
+                        <label>Admin ID</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <input type="text" name="username" id="admin_username" placeholder="Admin username" required autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Admin Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" name="password" id="admin_password" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-block glow">Admin Secure Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="glass-card footer">
+        <div class="footer-content">
+            <div class="brand"><i class="fa-solid fa-bolt"></i> AOQRWE</div>
+            <div class="socials">
+                <i class="fa-brands fa-twitter"></i>
+                <i class="fa-brands fa-github"></i>
+                <i class="fa-brands fa-discord"></i>
+            </div>
+        </div>
+        <p class="copyright">&copy; 2026 AOQRWE Devs. All Rights Reserved.</p>
+    </footer>
+</div>
+
+<style>
+    .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; }
+    .auth-tab { background: none; border: none; color: var(--text-muted); padding: 10px 20px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s; }
+    .auth-tab.active { color: var(--accent-blue); border-bottom: 2px solid var(--accent-blue); }
+    .auth-toggle-sub { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+    .auth-toggle-sub .btn.active { background: var(--bg-glass-solid); border-color: var(--accent-blue); color: var(--accent-blue); }
+    .auth-modal-content { max-width: 450px !important; width: 90%; }
+</style>
+
+<script>
+    function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+    
+    function switchAuthTab(role) {
+        document.getElementById('tab-student').classList.remove('active');
+        document.getElementById('tab-admin').classList.remove('active');
+        document.getElementById('student-content').classList.add('hidden');
+        document.getElementById('admin-content').classList.add('hidden');
+        
+        if(role === 'student') {
+            document.getElementById('tab-student').classList.add('active');
+            document.getElementById('student-content').classList.remove('hidden');
+        } else {
+            document.getElementById('tab-admin').classList.add('active');
+            document.getElementById('admin-content').classList.remove('hidden');
+        }
+    }
+    
+    function toggleAction(action) {
+        document.getElementById('btn-login-toggle').classList.remove('active');
+        document.getElementById('btn-register-toggle').classList.remove('active');
+        document.getElementById('student-login-form').classList.add('hidden');
+        document.getElementById('student-register-form').classList.add('hidden');
+        
+        if(action === 'login') {
+            document.getElementById('btn-login-toggle').classList.add('active');
+            document.getElementById('student-login-form').classList.remove('hidden');
+        } else {
+            document.getElementById('btn-register-toggle').classList.add('active');
+            document.getElementById('student-register-form').classList.remove('hidden');
+        }
+    }
+
+    document.getElementById('authModal').addEventListener('click', function(e) {
+        if(e.target === this) closeAuthModal();
+    });
+</script>
+{% endblock %}

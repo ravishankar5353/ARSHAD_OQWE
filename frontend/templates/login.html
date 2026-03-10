@@ -2,10 +2,10 @@
 
 {% block auth_content %}
 <div class="auth-wrapper">
-    <div class="auth-card glass-card">
+    <div class="auth-card glass-card fade-in-up">
         <div class="auth-header text-center">
-            <h2><i class="fa-solid fa-bolt"></i> Access Portal</h2>
-            <p>Enter your credentials to continue</p>
+            <h2><i class="fa-solid fa-bolt"></i> AOQRWE Secure Access</h2>
+            <p>Please enter your credentials to proceed</p>
         </div>
         
         <form method="POST" action="/login" class="auth-form">
@@ -13,7 +13,7 @@
                 <label>Username</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-user"></i>
-                    <input type="text" name="username" placeholder="admin or user" required>
+                    <input type="text" name="username" placeholder="Enter username" required>
                 </div>
             </div>
             
@@ -25,12 +25,11 @@
                 </div>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block glow mt-2">Authenticate <i class="fa-solid fa-arrow-right"></i></button>
+            <button type="submit" class="btn btn-primary btn-block glow mt-2">Sign In <i class="fa-solid fa-right-to-bracket"></i></button>
         </form>
         
-        <div class="auth-footer text-center mt-2">
-            <p><small>Hint: admin/admin OR user/password</small></p>
-            <a href="/" class="text-link"><i class="fa-solid fa-arrow-left"></i> Back home</a>
+        <div class="auth-footer text-center mt-3">
+            <a href="/" class="text-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
         </div>
     </div>
 </div>

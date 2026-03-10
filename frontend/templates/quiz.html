@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="app-main-view" data-category="{{ category }}">
+    <div class="quiz-container fade-in-up">
+        <!-- Header: Progress bar + question counter + timer -->
+        <div class="glass-card" style="padding: 18px 24px;">
+            <div class="quiz-progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="flex-between mt-2">
+                <div>
+                    <span class="text-muted" style="font-size:0.85rem;">SUBJECT: <span style="color:var(--accent-teal); font-weight:bold;">{{ category }}</span></span>
+                    <div style="font-size:1.3rem; font-weight:800; margin-top:4px;">
+                        <span id="currentQNum">1</span>
+                        <span class="text-muted" style="font-size:1rem;"> / {{ questions|length }}</span>
+                    </div>
+                </div>
+                
+                <!-- Circular Countdown Timer -->
+                <div class="timer-widget">
+                    <svg class="circular-timer" id="timerSVG" viewBox="0 0 70 70">
+                        <circle class="bg" cx="35" cy="35" r="29"></circle>
+                        <circle class="fg" id="timerCircle" cx="35" cy="35" r="29"></circle>
+                    </svg>
+                    <div class="time-text" id="timeText">30</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question body -->
+        <div class="glass-card mt-2" style="padding: 30px 28px;">
+            <div style="margin-bottom:20px;">
+                <h2 id="questionText" style="font-size:1.2rem; font-weight:600; line-height:1.6; min-height:72px;">
+                    Loading…
+                </h2>
+            </div>
+            <!-- Option tiles grid -->
+            <div class="options-grid" id="optionsGrid">
+                <!-- Tiles injected via JS -->
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex-between mt-2" style="gap:12px;">
+            <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" disabled>
+                <i class="fa-solid fa-arrow-left"></i> Previous
+            </button>
+            <button class="btn btn-primary glow" id="nextBtn" onclick="nextQuestion()">
+                Next <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="btn btn-success glow hidden" id="submitBtn" onclick="showSubmitModal()">
+                <i class="fa-solid fa-paper-plane"></i> Submit Assessment
+            </button>
+        </div>
+    </div>
+
+    <!-- Side Stats Panel -->
+    <aside class="quiz-stats-sidebar glass-card fade-in-up">
+        <h3><i class="fa-solid fa-chart-column"></i> Live Progress</h3>
+        <div class="stats-list mt-2">
+            <div class="stat-item">
+                <div class="stat-check"><i class="fa-solid fa-check-double"></i></div>
+                <div class="stat-info">
+                    <span class="label">Attempted</span>
+                    <span id="answeredCount" class="val">0</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-uncheck"><i class="fa-solid fa-circle-question"></i></div>
+                <div class="stat-info">
+                    <span class="label">Unanswered</span>
+                    <span id="unansweredCount" class="val">{{ questions|length }}</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-timer"><i class="fa-solid fa-clock"></i></div>
+                <div class="stat-info">
+                    <span class="label">Tempo</span>
+                    <span class="val">Fast</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="question-map mt-3">
+            <p class="text-muted"><small>Question Navigator</small></p>
+            <div class="q-dots-grid">
+                {% for i in range(questions|length) %}
+                <div id="q-dot-{{ i }}" class="q-dot" onclick="jumpToQuestion({{ i }})">{{ i + 1 }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- ── Custom Submit Confirmation Modal ─────────────────────────── -->
+<div class="modal-backdrop hidden" id="submitModal" style="z-index:2000;">
+    <div class="glass-card modal" style="max-width:420px; text-align:center; padding:40px 32px;">
+        <div style="font-size:3rem; margin-bottom:12px;">🚀</div>
+        <h2 style="margin-bottom:10px;">Finalize Quiz?</h2>
+        <p class="text-muted" style="margin-bottom:24px; line-height:1.6;">
+            AOQRWE will now process your results. You cannot go back after this.
+        </p>
+        <div id="modalAnsweredInfo" style="margin-bottom:24px; font-size:0.95rem; color:var(--accent-teal); font-weight:600;"></div>
+        <div style="display:flex; gap:14px; justify-content:center;">
+            <button class="btn btn-outline" onclick="hideSubmitModal()">
+                <i class="fa-solid fa-arrow-left"></i> Review
+            </button>
+            <button class="btn btn-success glow" id="confirmSubmitBtn" onclick="submitQuiz()">
+                <i class="fa-solid fa-check"></i> Submit AOQRWE
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .app-main-view { display: flex; gap: 30px; align-items: flex-start; max-width: 1200px; margin: 0 auto; }
+    .quiz-container { flex: 1; }
+    .quiz-stats-sidebar { width: 250px; position: sticky; top: 30px; height: fit-content; }
+    .stat-item { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 12px; background: var(--bg-glass-solid); border-radius: 12px; }
+    .stat-item .val { font-size: 1.5rem; font-weight: 800; display: block; color: var(--accent-blue); }
+    .stat-item .label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+    .stat-check { color: var(--success); font-size: 1.5rem; }
+    .stat-uncheck { color: var(--warning); font-size: 1.5rem; }
+    .stat-timer { color: var(--accent-pink); font-size: 1.5rem; }
+    .q-dots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+    .q-dot { width: 35px; height: 35px; border-radius: 8px; background: var(--bg-glass); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 0.8rem; }
+    .q-dot:hover { background: var(--bg-glass-solid); transform: scale(1.1); }
+    .q-dot.active { background: var(--grad-primary); color: white; border-color: transparent; }
+    .q-dot.answered { border-color: var(--success); color: var(--success); }
+
+    @media (max-width: 900px) {
+        .app-main-view { flex-direction: column; }
+        .quiz-stats-sidebar { width: 100%; position: static; }
+    }
+</style>
+
+<script>
+    window.quizData = {{ questions|tojson|safe }};
+
+    function showSubmitModal() {
+        const answered = Object.keys(window._quizAnswers || {}).length;
+        const total    = (window.quizData || []).length;
+        const info     = document.getElementById('modalAnsweredInfo');
+        if (info) info.textContent = answered + ' of ' + total + ' questions finalized';
+        document.getElementById('submitModal').classList.remove('hidden');
+    }
+    function hideSubmitModal() {
+        document.getElementById('submitModal').classList.add('hidden');
+    }
+    document.getElementById('submitModal').addEventListener('click', function(e){
+        if (e.target === this) hideSubmitModal();
+    });
+</script>
+{% endblock %}

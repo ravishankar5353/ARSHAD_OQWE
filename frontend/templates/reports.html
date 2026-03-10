@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="reports-dashboard fade-in-up">
+
+    <!-- Header -->
+    <div class="flex-between" style="margin-bottom: 28px;">
+        <div>
+            <h1 style="font-size:1.8rem; font-weight:800;">Performance Report</h1>
+            <p class="text-muted" style="margin-top:4px;">Latest quiz breakdown &amp; answer review</p>
+        </div>
+        <div class="flex-center" style="gap:10px;">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Export
+            </button>
+            <a href="/quiz" class="btn btn-primary btn-sm glow">
+                <i class="fa-solid fa-rotate-right"></i> Retake Quiz
+            </a>
+        </div>
+    </div>
+
+    <!-- Grade + Summary Row -->
+    <div class="glass-card text-center" style="padding:36px;">
+        <div class="grade-badge grade-{{ grade|lower }}">{{ grade }}</div>
+        <h1 class="gradient-text" style="font-size:3rem; font-weight:900; margin:8px 0;">
+            {{ latest.score }} / {{ latest.total_questions }}
+        </h1>
+        <p class="text-muted" style="font-size:1rem;">Latest Assessment Result</p>
+
+        <!-- Metrics -->
+        <div class="report-summary-grid mt-3">
+            <div class="report-metric glass-card-solid">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-value gradient-text">{{ "%.1f"|format(pct) }}%</div>
+                <div class="metric-label">Accuracy</div>
+            </div>
+            <div class="report-metric glass-card-solid">
+                <div class="metric-icon">✅</div>
+                <div class="metric-value text-success">{{ latest.correct_answers }}</div>
+                <div class="metric-label">Correct</div>
+            </div>
+            <div class="report-metric glass-card-solid">
+                <div class="metric-icon">❌</div>
+                <div class="metric-value text-danger">{{ latest.incorrect_answers }}</div>
+                <div class="metric-label">Incorrect</div>
+            </div>
+            <div class="report-metric glass-card-solid">
+                <div class="metric-icon">⏱️</div>
+                <div class="metric-value gradient-teal">
+                    {% set m = (latest.time_spent // 60) %}{% set s = (latest.time_spent % 60) %}
+                    {{ "%d:%02d"|format(m, s) }}
+                </div>
+                <div class="metric-label">Time Taken</div>
+            </div>
+            <div class="report-metric glass-card-solid">
+                <div class="metric-icon">🏅</div>
+                <div class="metric-value gradient-purple">{{ grade }}</div>
+                <div class="metric-label">Grade</div>
+            </div>
+            <div class="report-metric glass-card-solid">
+                <div class="metric-icon">📅</div>
+                <div class="metric-value" style="font-size:1rem;">{{ latest.date_taken.split(' ')[0] }}</div>
+                <div class="metric-label">Date</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Progression Chart -->
+    <div class="glass-card mt-3">
+        <div class="flex-between" style="margin-bottom:16px;">
+            <h3>Score Progression</h3>
+            <span class="badge">All Attempts</span>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="progressChart"></canvas>
+        </div>
+        <script>
+            window.progressData = [
+                {% for r in all_results|reverse %}
+                { date: "{{ r.date_taken.split(' ')[0] }}", score: {{ r.score }} },
+                {% endfor %}
+            ];
+        </script>
+    </div>
+
+    <!-- Answer Review Section -->
+    <div class="review-section mt-3">
+        <div class="flex-between" style="margin-bottom: 20px;">
+            <h3><i class="fa-solid fa-clipboard-list" style="color:var(--accent-blue); margin-right:8px;"></i>Answer Review</h3>
+            {% if review_data %}
+            <span class="badge">{{ review_data|length }} questions</span>
+            {% endif %}
+        </div>
+
+        {% if review_data %}
+            {% for item in review_data %}
+            <div class="review-card {{ 'correct-card' if item.is_correct else 'wrong-card' }}">
+                <!-- Question -->
+                <div class="review-q-header">
+                    <div class="review-q-num">{{ loop.index }}</div>
+                    <div class="review-q-text">{{ item.question_text }}</div>
+                </div>
+
+                <!-- Options -->
+                <div class="review-options">
+                    {% set opts = [
+                        ('A', item.option_a),
+                        ('B', item.option_b),
+                        ('C', item.option_c),
+                        ('D', item.option_d)
+                    ] %}
+                    {% for key, text in opts %}
+                    <div class="review-option
+                        {{ 'is-correct' if key == item.correct_option else '' }}
+                        {{ 'is-wrong-pick' if (key == item.selected and not item.is_correct) else '' }}
+                    ">
+                        <span class="opt-letter">{{ key }}</span>
+                        <span>{{ text }}</span>
+                        {% if key == item.correct_option %}
+                        <i class="fa-solid fa-check" style="margin-left:auto; color:var(--success);"></i>
+                        {% elif key == item.selected and not item.is_correct %}
+                        <i class="fa-solid fa-xmark" style="margin-left:auto; color:var(--danger);"></i>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Result footer -->
+                <div class="review-footer">
+                    {% if item.is_correct %}
+                    <span class="result-chip chip-correct"><i class="fa-solid fa-circle-check"></i> Correct</span>
+                    <span class="text-muted">Your answer: <strong>{{ item.selected }}</strong></span>
+                    {% else %}
+                    <span class="result-chip chip-wrong"><i class="fa-solid fa-circle-xmark"></i> Wrong</span>
+                    <span class="text-muted">
+                        You picked: <strong style="color:var(--danger);">{{ item.selected or 'Skipped' }}</strong>
+                        &nbsp;·&nbsp; Correct: <strong style="color:var(--success);">{{ item.correct_option }}</strong>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-review">
+                <i class="fa-solid fa-ghost"></i>
+                <p>Answer review is available for quizzes taken after the latest update.</p>
+                <a href="/quiz" class="btn btn-primary mt-2 glow" style="margin-top:16px;">Take a Quiz Now</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="flex-center mt-3" style="gap:12px; justify-content:center;">
+        <a href="/dashboard" class="btn btn-outline">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a href="/quiz" class="btn btn-primary glow">
+            <i class="fa-solid fa-play"></i> Play Again
+        </a>
+    </div>
+</div>
+{% endblock %}

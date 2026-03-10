@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="user-dashboard fade-in-up">
+    <!-- Header -->
+    <div class="glass-card welcome-hero">
+        <div class="flex-between">
+            <div>
+                <h1>Welcome back, {{ session.username }}! 👋</h1>
+                <p class="text-muted mt-1">Ready for the AOQRWE 30-Second Challenge? Choose a subject to begin.</p>
+            </div>
+            <div class="stats-pills">
+                <div class="pill glass-card">
+                    <span class="label">Total Assessments</span>
+                    <span class="val">{{ results|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Bank Selector -->
+    <div class="mt-3">
+        <h2 style="margin-bottom:20px;"><i class="fa-solid fa-layer-group"></i> Available AOQRWE Banks</h2>
+        <div class="subjects-grid">
+            {% if categories %}
+                {% for cat, count in categories %}
+                <div class="subject-card glass-card hover-lift">
+                    <div class="subject-icon">
+                        <i class="fa-solid fa-book-open gradient-{{ loop.cycle('teal', 'purple', 'blue', 'pink') }}"></i>
+                    </div>
+                    <div class="subject-info">
+                        <h3>{{ cat }}</h3>
+                        <p class="text-muted">{{ count }} Active Questions</p>
+                    </div>
+                    <a href="/quiz/{{ cat }}" class="btn btn-primary glow btn-block mt-2">Start Challenge</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="glass-card text-center" style="padding: 40px; grid-column: span 3;">
+                    <i class="fa-solid fa-circle-exclamation text-warning" style="font-size: 3rem;"></i>
+                    <h3 class="mt-2">No Question Banks Available</h3>
+                    <p class="text-muted">Wait for an admin to publish subjects.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent performance -->
+    <div class="mt-3 recent-section">
+        <div class="glass-card">
+            <div class="card-header flex-between">
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h2>
+                <a href="/reports" class="text-link">Full History <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="scroll-container mt-2">
+                {% if results %}
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Bank</th>
+                            <th>Score</th>
+                            <th>Time Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in results[:5] %}
+                        <tr>
+                            <td><small>{{ res.date_taken[:10] }}</small></td>
+                            <td><span class="badge">{{ res.answers[0].category if (res.answers and res.answers|length > 0) else 'General' }}</span></td>
+                            <td class="status-{{ 'green' if (res.score/res.total_questions) >= 0.8 else 'yellow' if (res.score/res.total_questions) >= 0.5 else 'red' }}">
+                                <strong>{{ res.score }}/{{ res.total_questions }}</strong>
+                            </td>
+                            <td>{{ res.time_spent }}s</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-center text-muted" style="padding:20px;">No attempts yet. Take your first quiz!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-hero { padding: 40px; border-bottom: 2px solid var(--accent-blue); }
+    .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .subject-card { padding: 24px; text-align: center; }
+    .subject-icon { font-size: 2.5rem; margin-bottom: 15px; }
+    .activity-table { width: 100%; border-collapse: collapse; }
+    .activity-table td, .activity-table th { padding: 15px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+    .activity-table th { color: var(--text-muted); font-size: 0.8rem; }
+    .status-green { color: var(--success); }
+    .status-yellow { color: var(--warning); }
+    .status-red { color: var(--danger); }
+</style>
+{% endblock %}

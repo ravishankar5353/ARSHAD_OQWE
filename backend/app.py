@@ -2,8 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import database
 import os
 
-app = Flask(__name__)
-app.secret_key = 'super_secret_glass_key'
+app = Flask(__name__, 
+            template_folder=os.path.join(os.path.dirname(__file__), '../frontend/templates'),
+            static_folder=os.path.join(os.path.dirname(__file__), '../frontend/static'))
+app.secret_key = 'AOQRWE_SUPER_SECRET_KEY'
 
 # Initialize DB on start
 with app.app_context():
@@ -40,8 +42,20 @@ def login():
             if user['role'] == 'admin':
                 return redirect('/admin')
             return redirect('/dashboard')
-        flash('Invalid credentials.', 'error')
+        flash('Invalid credentials. Please try again.', 'error')
     return render_template('login.html')
+
+@app.route('/register', methods=['POST'])
+def register():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    role = request.form.get('role', 'user')
+    
+    if database.register_user(username, password, role):
+        flash('Account created! Please login.', 'success')
+    else:
+        flash('Username already exists.', 'error')
+    return redirect('/login')
 
 @app.route('/logout')
 def logout():
@@ -55,9 +69,9 @@ def admin_dashboard():
     questions = database.get_all_questions()
     results = database.get_all_results_with_users()
     cat_dist = database.get_questions_category_distribution()
-    return render_template('admin_dashboard.html', questions=questions, results=results, cat_dist=cat_dist)
+    return render_template('admin_dashboard.html', questions=questions, results=results, categories=cat_dist)
 
-@app.route('/admin/question/add', methods=['POST'])
+@app.route('/admin/add_question', methods=['POST'])
 @login_required(role='admin')
 def admin_add_question():
     data = request.form
@@ -85,17 +99,22 @@ def admin_delete_question(q_id):
 @login_required(role='user')
 def user_dashboard():
     results = database.get_user_results(session['user_id'])
-    return render_template('user_dashboard.html', results=results)
+    categories = database.get_questions_category_distribution()
+    return render_template('user_dashboard.html', results=results, categories=categories)
 
 @app.route('/quiz')
 @login_required(role='user')
-def quiz():
-    questions = database.get_all_questions()
+def quiz_redirect():
+    return redirect('/dashboard')
+
+@app.route('/quiz/<category>')
+@login_required(role='user')
+def quiz_category(category):
+    questions = database.get_all_questions(category)
     if not questions:
-        flash("No questions available.", "error")
+        flash(f"No questions available for {category}.", "error")
         return redirect('/dashboard')
-    # Can pick random or sequential. Passing all to JS for simplicity.
-    return render_template('quiz.html', questions=questions)
+    return render_template('quiz.html', questions=questions, category=category)
 
 @app.route('/quiz/submit', methods=['POST'])
 @login_required(role='user')
@@ -106,8 +125,10 @@ def submit_quiz():
     correct = data.get('correct', 0)
     incorrect = data.get('incorrect', 0)
     time_spent = data.get('time_spent', 0)
+    answers = data.get('answers', None)
+    category = data.get('category', 'General')
     
-    database.save_result(session['user_id'], score, total, correct, incorrect, time_spent)
+    database.save_result(session['user_id'], score, total, correct, incorrect, time_spent, category, answers)
     return jsonify({"status": "success"})
 
 @app.route('/reports')
@@ -120,7 +141,44 @@ def reports():
         return redirect('/dashboard')
         
     latest = results[0]
-    return render_template('reports.html', latest=latest, all_results=results)
+    
+    # Build answer review data if per-question answers are stored
+    review_data = []
+    if latest.get('answers'):
+        all_questions = {q['id']: q for q in database.get_all_questions()}
+        for ans in latest['answers']:
+            qid = ans.get('question_id')
+            selected = ans.get('selected')
+            q = all_questions.get(qid)
+            if not q:
+                continue
+            is_correct = (selected == q['correct_option'])
+            review_data.append({
+                'question_text': q['question_text'],
+                'option_a': q['option_a'],
+                'option_b': q['option_b'],
+                'option_c': q['option_c'],
+                'option_d': q['option_d'],
+                'correct_option': q['correct_option'],
+                'selected': selected,
+                'is_correct': is_correct
+            })
+    
+    # Compute grade
+    pct = (latest['score'] / latest['total_questions'] * 100) if latest['total_questions'] else 0
+    if pct >= 90:
+        grade = 'A'
+    elif pct >= 75:
+        grade = 'B'
+    elif pct >= 60:
+        grade = 'C'
+    elif pct >= 50:
+        grade = 'D'
+    else:
+        grade = 'F'
+    
+    return render_template('reports.html', latest=latest, all_results=results,
+                           review_data=review_data, pct=pct, grade=grade)
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required()
